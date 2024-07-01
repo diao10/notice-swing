@@ -3,6 +3,8 @@ package com.notice.swing;
 import cn.hutool.core.util.StrUtil;
 
 import javax.swing.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 /**
  * @author diaoyn
@@ -19,6 +21,8 @@ public class NoticeSwing {
     private JButton choose;
     private JTextField exportPath;
     private JTextField maxPage;
+    private JProgressBar progressBar;
+
 
     public NoticeSwing(JFrame frame) {
         //导出按钮
@@ -27,9 +31,10 @@ public class NoticeSwing {
                 JOptionPane.showMessageDialog(noticeSwing, "请输入导出路径");
                 return;
             }
-            CcbFundListener.exportNotice(startDate.getText(), endDate.getText(), searchWord.getText(), Integer.valueOf(maxPage.getText()), exportPath.getText());
+            progressBar.setValue(0);
+            CcbFundListener.exportNotice(startDate.getText(), endDate.getText(), searchWord.getText(), maxPage.getText(), exportPath.getText(), progressBar);
+            progressBar.setValue(100);
             JOptionPane.showMessageDialog(noticeSwing, "导出成功");
-
         });
         //窗体关闭
         closeButton.addActionListener(e -> frame.dispose());
@@ -44,6 +49,16 @@ public class NoticeSwing {
                 //选择的路径
                 System.out.println(fileChooser.getSelectedFile().getPath());
                 exportPath.setText(fileChooser.getSelectedFile().getPath());
+            }
+        });
+        //maxPage监听
+        maxPage.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                String key = "0123456789";
+                if (key.indexOf(e.getKeyChar()) < 0) {
+                    e.consume();//如果不是数字则取消
+                }
             }
         });
     }

@@ -2,6 +2,8 @@ package com.notice;
 
 import com.notice.swing.NoticeSwing;
 
+import javax.swing.*;
+
 /**
  * @author diaoyn
  * @ClassName ${NAME}
@@ -10,7 +12,7 @@ import com.notice.swing.NoticeSwing;
 public class Main {
     public static void main(String[] args) {
 //        javax.swing.SwingUtilities.invokeLater(HelloWorldSwing::start);
-        javax.swing.SwingUtilities.invokeLater(NoticeSwing::start);
+       SwingUtilities.invokeLater(NoticeSwing::start);
 
     }
 }

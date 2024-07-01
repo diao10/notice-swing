@@ -4,6 +4,7 @@ import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
@@ -12,6 +13,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import javax.swing.*;
 import java.io.IOException;
 
 
@@ -25,13 +27,21 @@ public class CcbFundListener {
         try {
             document = conn.get();
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            System.out.println("-----------------------------------------conn:" + e.getMessage());
         }
         return document;
     }
 
+    public static void exportNotice(String startDate, String endDate, String searchWord, String maxPageStr, String exportPath, JProgressBar progressBar) {
+        Integer maxPage = null;
+        if (NumberUtil.isNumber(maxPageStr)) {
+            maxPage = Integer.parseInt(maxPageStr);
+        }
+        exportNotice(startDate, endDate, searchWord, maxPage, exportPath, progressBar);
+    }
 
-    public static void exportNotice(String startDate, String endDate, String searchWord, Integer maxPage, String exportPath) {
+
+    public static void exportNotice(String startDate, String endDate, String searchWord, Integer maxPage, String exportPath, JProgressBar progressBar) {
         exportPath = FileUtil.normalize(exportPath);
         StringBuilder contentC = new StringBuilder();
         if (ObjectUtil.isNull(maxPage)) {
@@ -39,6 +49,8 @@ public class CcbFundListener {
         }
         out:
         for (int i = 1; i <= maxPage; i++) {
+            progressBar.setValue(i * 100 / maxPage);
+            progressBar.repaint();
             String url = "http://www.ccbfund.cn/xxplxxpl/index_" + i + ".jhtml";
             Document doc = getDocument(url);
             Element cls = doc.getElementsByClass("zixunliebiao").first();
@@ -67,7 +79,7 @@ public class CcbFundListener {
                         String suffix = FileUtil.getSuffix(docHref);
                         long size = HttpUtil.downloadFile(prefix + docHref, exportPath + "/ccbfund/" + title + "_" + DateUtil.format(pubDate, DatePattern.PURE_DATE_FORMAT) + "." + suffix);
                         if (size <= 0) {
-                            System.out.println(title);
+                            System.out.println("-----------------------------------------title:" + title);
                         }
                     }
                     //页数
@@ -77,7 +89,7 @@ public class CcbFundListener {
                         maxPage = Integer.parseInt(content);
                     }
                 } catch (Exception e) {
-                    System.out.println(e.getMessage());
+                    System.out.println("-----------------------------------------" + e.getMessage());
                 }
             }
         }
