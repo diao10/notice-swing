@@ -1,6 +1,6 @@
-package org.example.notice;
+package com.notice;
 
-import org.example.notice.swing.NoticeSwing;
+import com.notice.swing.NoticeSwing;
 
 /**
  * @author diaoyn

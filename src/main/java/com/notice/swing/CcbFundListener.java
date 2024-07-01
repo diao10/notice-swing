@@ -1,10 +1,11 @@
-package org.example.notice.util;
+package com.notice.swing;
 
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -17,26 +18,28 @@ import java.io.IOException;
 /**
  * @author EDY
  */
-public class CcbFundUtil {
+public class CcbFundListener {
     public static Document getDocument(String url) {
         Connection conn = Jsoup.connect(url);
         Document document = null;
         try {
             document = conn.get();
         } catch (IOException e) {
-            e.printStackTrace();
-            // handle error
+            System.out.println(e.getMessage());
         }
         return document;
     }
 
-    public static void main(String[] args) {
+
+    public static void exportNotice(String startDate, String endDate, String searchWord, Integer maxPage, String exportPath) {
+        exportPath = FileUtil.normalize(exportPath);
         StringBuilder contentC = new StringBuilder();
-
-
-      out:  for (int i = 1; i <= 200; i++) {
+        if (ObjectUtil.isNull(maxPage)) {
+            maxPage = 1;
+        }
+        out:
+        for (int i = 1; i <= maxPage; i++) {
             String url = "http://www.ccbfund.cn/xxplxxpl/index_" + i + ".jhtml";
-
             Document doc = getDocument(url);
             Element cls = doc.getElementsByClass("zixunliebiao").first();
             for (Element child : cls.children()) {
@@ -46,42 +49,39 @@ public class CcbFundUtil {
                         String href = child.getElementsByTag("li").get(0).getElementsByTag("a").get(0).attr("href");
                         String dateStr = child.getElementsByTag("li").get(0).getElementsByTag("span").text();
                         DateTime pubDate = DateUtil.parse(dateStr, DatePattern.CHINESE_DATE_PATTERN);
-                        int year = pubDate.year();
-                        if (pubDate.isAfter(DateUtil.parseDate("2024-06-30"))) {
+                        if (StrUtil.isNotEmpty(endDate) && pubDate.isAfter(DateUtil.parseDate(endDate))) {
                             continue;
                         }
-                        if (pubDate.isBefore(DateUtil.parseDate("2024-01-01"))) {
+                        if (StrUtil.isNotEmpty(startDate) && pubDate.isBefore(DateUtil.parseDate(startDate))) {
                             break out;
                         }
-//                        if (!pubD ate.isBefore(DateUtil.parseDate("2023-01-01"))) {
-//                        System.out.println("title = " + title);
-//                        if ((title.contains("关联方") || title.contains("承销")) && year == 2022) {
+                        if (StrUtil.isNotEmpty(searchWord) && !title.contains(searchWord)) {
+                            continue;
+                        }
                         contentC.append("第").append(i).append("页，标题为：").append(title).append("   ").append(dateStr).append("\r\n");
-//                        }
-//                        }
-//                        if (year <= 2022) {
-//                            break out;
-//                        }
+
                         //下载文档
                         Document hrefDoc = getDocument(href);
                         String docHref = hrefDoc.getElementsByClass("wenzhang").first().getElementsByTag("a").first().attr("href");
                         String prefix = "http://www.ccbfund.cn";
                         String suffix = FileUtil.getSuffix(docHref);
-                        long size = HttpUtil.downloadFile(prefix + docHref, "C:\\Users\\EDY\\Desktop\\ccbfund_141\\" + title + "_" + DateUtil.format(pubDate, DatePattern.PURE_DATE_FORMAT) + "." + suffix);
+                        long size = HttpUtil.downloadFile(prefix + docHref, exportPath + "/ccbfund/" + title + "_" + DateUtil.format(pubDate, DatePattern.PURE_DATE_FORMAT) + "." + suffix);
                         if (size <= 0) {
                             System.out.println(title);
                         }
                     }
+                    //页数
+                    if (maxPage == 1 && ObjectUtil.isNotEmpty(child.getElementsByTag("div"))) {
+                        String content = child.getElementsByTag("div").text();
+                        content = StrUtil.sub(content, content.indexOf("共") + 1, content.indexOf("条"));
+                        maxPage = Integer.parseInt(content);
+                    }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    System.out.println(e.getMessage());
                 }
             }
-
         }
-
-        FileUtil.writeUtf8String(contentC.toString(), "C:\\Users\\EDY\\Desktop\\ccbfund_141.txt");
-
-
-        System.out.println("-----------------------------------");
+        FileUtil.writeUtf8String(contentC.toString(), exportPath + "/" + "ccbfund" + ".txt");
     }
+
 }

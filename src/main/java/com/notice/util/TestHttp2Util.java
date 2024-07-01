@@ -1,4 +1,4 @@
-package org.example.notice.util;
+package com.notice.util;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.http.HttpUtil;

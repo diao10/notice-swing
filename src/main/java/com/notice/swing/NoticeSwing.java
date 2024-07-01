@@ -1,4 +1,4 @@
-package org.example.notice.swing;
+package com.notice.swing;
 
 import cn.hutool.core.util.StrUtil;
 

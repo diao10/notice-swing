@@ -1,4 +1,4 @@
-package org.example.notice.util;
+package com.notice.util;
 
 import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
