@@ -13,6 +13,6 @@ public class Main {
     public static void main(String[] args) {
 //        javax.swing.SwingUtilities.invokeLater(HelloWorldSwing::start);
        SwingUtilities.invokeLater(NoticeSwing::start);
-
+//        https://blog.csdn.net/a924382407/article/details/125935649
     }
 }
