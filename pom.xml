@@ -48,93 +48,70 @@
     </properties>
     <build>
         <plugins>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.2</version>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
                 <configuration>
-                    <!--要使用的打包配置.-->
-                    <archive>
-                        <!-- 创建的归档文件是否包含以下pom.xml 和pom.properties Maven 文件,默认是true -->
-                        <addMavenDescriptor>true</addMavenDescriptor>
-                        <!-- 生成MANIFEST.MF的设置 -->
-                        <manifest>
-                            <!-- 为依赖包添加路径, 这些路径会写在MANIFEST文件的Class-Path下 -->
-                            <addClasspath>true</addClasspath>
-                            <!-- 这个jar所依赖的jar包添加classPath的时候的前缀，如果这个jar本身和依赖包在同一级目录，则不需要添加 -->
-                            <classpathPrefix>lib/</classpathPrefix>
-                            <!-- jar启动入口类 -->
+                    <transformers>
+                        <transformer
+                                implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                             <mainClass>com.notice.Main</mainClass>
-                        </manifest>
-                        <manifestEntries>
-                            <!-- 在Class-Path下添加配置文件的路径 -->
-                            <!--<Class-Path>../config/</Class-Path>-->
-                        </manifestEntries>
-                    </archive>
-                    <!-- jar包的位置，其中${project.build.directory}默认为 target/ -->
-                    <outputDirectory>${project.build.directory}</outputDirectory>
-                    <!--过滤掉不希望包含在jar中的文件-->
-                    <excludes>
-<!--                        <exclude>${project.basedir}/xml/*</exclude>-->
-                    </excludes>
-                    <!--要包含的文件列表-->
-                    <includes>
-                        <!-- 打jar包时，打包class文件和config目录下面的 properties文件 -->
-                        <!-- 有时候可能需要一些其他文件，这边可以配置，包括剔除的文件等等 -->
-                        <include>**/*.class</include>
-                        <include>**/*.properties</include>
-                    </includes>
+                        </transformer>
+                    </transformers>
                 </configuration>
                 <executions>
                     <execution>
+                        <phase>package</phase>
                         <goals>
-
+                            <goal>shade</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
 
-<!--            <plugin>-->
-<!--                <groupId>com.akathist.maven.plugins.launch4j</groupId>-->
-<!--                <artifactId>launch4j-maven-plugin</artifactId>-->
-<!--                <version>2.5.1</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>launch4j</id>-->
-<!--                        <phase>package</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>launch4j</goal>-->
-<!--                        </goals>-->
-<!--                        <configuration>-->
-<!--                            <headerType>gui</headerType> &lt;!&ndash; gui 或 console &ndash;&gt;-->
-<!--                            <outfile>${project.build.directory}/${project.artifactId}.exe</outfile>-->
-<!--                            <jar>${project.build.directory}/${project.build.finalName}.jar</jar>-->
-<!--                            <errTitle>Error</errTitle>-->
-<!--                            <cmdLine></cmdLine>-->
-<!--                            <chdir>.</chdir>-->
-<!--                            <priority>normal</priority>-->
-<!--                            <downloadUrl>http://java.com/download</downloadUrl>-->
-<!--                            <supportUrl>http://www.example.com/support</supportUrl>-->
-<!--                            <stayAlive>false</stayAlive>-->
-<!--                            <jre>-->
-<!--                                <minVersion>1.8.0</minVersion>-->
-<!--                                <jdkPreference>preferJre</jdkPreference>-->
-<!--                            </jre>-->
-<!--                            <versionInfo>-->
-<!--                                <fileVersion>${project.version}</fileVersion>-->
-<!--                                <txtFileVersion>${project.version}</txtFileVersion>-->
-<!--                                <fileDescription>NoticeSwing</fileDescription>-->
-<!--                                <copyright>Copyright (C) 2024</copyright>-->
-<!--                                <productVersion>${project.version}</productVersion>-->
-<!--                                <txtProductVersion>${project.version}</txtProductVersion>-->
-<!--                                <productName>noticeSwing</productName>-->
-<!--                                <internalName>notice</internalName>-->
-<!--                                <originalFilename>notice.exe</originalFilename>-->
-<!--                            </versionInfo>-->
-<!--                        </configuration>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
+            <plugin>
+                <groupId>com.akathist.maven.plugins.launch4j</groupId>
+                <artifactId>launch4j-maven-plugin</artifactId>
+                <version>2.5.1</version>
+                <executions>
+                    <execution>
+                        <id>launch4j</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>launch4j</goal>
+                        </goals>
+                        <configuration>
+                            <headerType>gui</headerType> <!-- gui 或 console -->
+                            <outfile>${project.build.directory}/${project.artifactId}.exe</outfile>
+                            <jar>${project.build.directory}/${project.build.finalName}.jar</jar>
+                            <errTitle>Error</errTitle>
+                            <cmdLine></cmdLine>
+                            <chdir>.</chdir>
+                            <priority>normal</priority>
+                            <downloadUrl>http://java.com/download</downloadUrl>
+                            <supportUrl>http://www.example.com/support</supportUrl>
+                            <stayAlive>false</stayAlive>
+                            <jre>
+                                <minVersion>1.8.0</minVersion>
+                                <jdkPreference>preferJre</jdkPreference>
+                            </jre>
+                            <versionInfo>
+                                <fileVersion>${project.version}</fileVersion>
+                                <txtFileVersion>${project.version}</txtFileVersion>
+                                <fileDescription>NoticeSwing</fileDescription>
+                                <copyright>Copyright (C) 2024</copyright>
+                                <productVersion>${project.version}</productVersion>
+                                <txtProductVersion>${project.version}</txtProductVersion>
+                                <productName>noticeSwing</productName>
+                                <internalName>notice</internalName>
+                                <originalFilename>notice.exe</originalFilename>
+                            </versionInfo>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>
