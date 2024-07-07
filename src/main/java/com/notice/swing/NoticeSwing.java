@@ -27,7 +27,7 @@ public class NoticeSwing {
     private JProgressBar progressBar;
 
 
-    public NoticeSwing(JFrame frame) {
+    public NoticeSwing() {
         //导出按钮
         exportButton.addActionListener(e -> {
             if (StrUtil.isBlank(exportPath.getText())) {
@@ -69,7 +69,7 @@ public class NoticeSwing {
 
     public static void start() {
         JFrame frame = new JFrame("NoticeSwing");
-        frame.setContentPane(new NoticeSwing(frame).noticeSwing);
+        frame.setContentPane(new NoticeSwing().noticeSwing);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();
         frame.setVisible(true);
