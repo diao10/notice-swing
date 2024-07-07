@@ -8,6 +8,7 @@ import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
+import com.notice.enums.FundEnum;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -20,7 +21,7 @@ import java.io.IOException;
 /**
  * @author EDY
  */
-public class CcbFundListener {
+public class CcbFundsListener {
     public static Document getDocument(String url) {
         Connection conn = Jsoup.connect(url);
         Document document = null;
@@ -43,6 +44,7 @@ public class CcbFundListener {
 
     public static void exportNotice(String startDate, String endDate, String searchWord, Integer maxPage, String exportPath, JProgressBar progressBar) {
         exportPath = FileUtil.normalize(exportPath);
+        exportPath = exportPath + "/" + FundEnum.CCB_FUNDS.getName() + "/";
         StringBuilder contentC = new StringBuilder();
         if (ObjectUtil.isNull(maxPage)) {
             maxPage = 1;
@@ -77,7 +79,7 @@ public class CcbFundListener {
                         String docHref = hrefDoc.getElementsByClass("wenzhang").first().getElementsByTag("a").first().attr("href");
                         String prefix = "http://www.ccbfund.cn";
                         String suffix = FileUtil.getSuffix(docHref);
-                        long size = HttpUtil.downloadFile(prefix + docHref, exportPath + "/ccbfund/" + title + "_" + DateUtil.format(pubDate, DatePattern.PURE_DATE_FORMAT) + "." + suffix);
+                        long size = HttpUtil.downloadFile(prefix + docHref, exportPath + "doc/" + title + "_" + DateUtil.format(pubDate, DatePattern.PURE_DATE_FORMAT) + "." + suffix);
                         if (size <= 0) {
                             System.out.println("-----------------------------------------title:" + title);
                         }
@@ -93,7 +95,7 @@ public class CcbFundListener {
                 }
             }
         }
-        FileUtil.writeUtf8String(contentC.toString(), exportPath + "/" + "ccbfund" + ".txt");
+        FileUtil.writeUtf8String(contentC.toString(), exportPath + "fundList.txt");
     }
 
 }
