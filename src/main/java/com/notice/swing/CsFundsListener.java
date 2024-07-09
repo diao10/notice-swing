@@ -5,6 +5,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
@@ -48,9 +49,10 @@ public class CsFundsListener {
     public static void exportNotice(String startDate, String endDate, String searchWord, Integer maxPage, String exportPath, JProgressBar progressBar) {
         exportPath = FileUtil.normalize(exportPath);
         exportPath = exportPath + "/" + FundEnum.CS_FUNDS.getName() + "/";
-        StringBuilder contentC = new StringBuilder();
+        StringBuilder result = new StringBuilder();
+        StringBuilder resultError = new StringBuilder();
 
-        if (ObjectUtil.isNull(maxPage)) {
+        if (ObjectUtil.isNull(maxPage) || maxPage <= 0) {
             maxPage = 1;
         }
         for (int i = 0; i <= maxPage; i++) {
@@ -71,7 +73,7 @@ public class CsFundsListener {
             commonMap.put("_ZVING_DATA_FORMAT", "json");
             String bodyStr = HttpUtil.post("https://www.csfunds.com.cn/front/ajax/invoke", commonMap);
             JSONObject bodyJson = JSONUtil.parseObj(bodyStr);
-
+            Integer count = bodyJson.getInt("count");
             if (bodyJson.getInt("count") <= 0) {
                 break;
             }
@@ -81,8 +83,7 @@ public class CsFundsListener {
                 String dateStr = jsonObject.getStr("PUBLISHDATE");
                 Date pubDate = DateUtil.parse(dateStr, "yyyy.MM.dd");
                 String dateStr2 = DateUtil.formatDate(pubDate);
-                contentC.append("第").append(i + 1).append("页，标题为：").append(jsonObject.get("TITLE")).append("   ").append(dateStr2).append("\r\n");
-
+                result.append("第").append(i + 1).append("页，标题为：").append(jsonObject.get("TITLE")).append("   ").append(dateStr2).append("\r\n");
                 //下载文档
                 String prefix = "https://www.csfunds.com.cn";
                 String link = jsonObject.getStr("Link");
@@ -92,17 +93,18 @@ public class CsFundsListener {
                     if (FileUtil.isAbsolutePath(docHref)) {
                         docHref = prefix + docHref;
                     }
-
                     String suffix = FileUtil.getSuffix(docHref);
-                    HttpUtil.downloadFile(docHref, "C:\\Users\\39240\\Desktop\\csfunds_61\\" + jsonObject.get("TITLE") + "_" + DateUtil.format(pubDate, DatePattern.PURE_DATE_FORMAT) + "." + suffix);
+                    HttpUtil.downloadFile(docHref, exportPath + "doc/" + jsonObject.get("TITLE") + "_" + DateUtil.format(pubDate, DatePattern.PURE_DATE_FORMAT) + "." + suffix);
 
                 } catch (Exception e) {
-                    e.printStackTrace();
-//                    contentNoDoc.append("第").append(i + 1).append("页，标题为：").append(jsonObject.get("TITLE")).append("   ").append(dateStr2).append("\r\n");
+                    System.out.println("-----------------------------------------" + e.getMessage());
+                    resultError.append("第").append(i + 1).append("页，标题为：").append(jsonObject.get("TITLE")).append(",").append(e.getMessage()).append("\r\n");
                 }
             }
         }
-
-
+        FileUtil.writeUtf8String(result.toString(), exportPath + "fundList.txt");
+        if (StrUtil.isNotEmpty(resultError)) {
+            FileUtil.writeUtf8String(resultError.toString(), exportPath + "fundListError.txt");
+        }
     }
 }

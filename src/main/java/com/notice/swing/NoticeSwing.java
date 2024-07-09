@@ -30,7 +30,7 @@ public class NoticeSwing {
 
 
     public NoticeSwing() {
-
+        //下拉框的值
         DefaultComboBoxModel<String> defaultComboBoxModel1 = new DefaultComboBoxModel<>();
         for (FundEnum value : FundEnum.values()) {
             defaultComboBoxModel1.addElement(value.getName());
@@ -47,7 +47,7 @@ public class NoticeSwing {
             if (FundEnum.CCB_FUNDS.getName().equals(fundComboBox.getSelectedItem())) {
                 CcbFundsListener.exportNotice(startDate.getText(), endDate.getText(), searchWord.getText(), maxPage.getText(), exportPath.getText(), progressBar);
             } else if (FundEnum.CS_FUNDS.getName().equals(fundComboBox.getSelectedItem())) {
-                CcbFundsListener.exportNotice(startDate.getText(), endDate.getText(), searchWord.getText(), maxPage.getText(), exportPath.getText(), progressBar);
+                CsFundsListener.exportNotice(startDate.getText(), endDate.getText(), searchWord.getText(), maxPage.getText(), exportPath.getText(), progressBar);
             } else if (FundEnum.EAST_MONEY.getName().equals(fundComboBox.getSelectedItem())) {
 
             }
@@ -138,7 +138,7 @@ public class NoticeSwing {
         maxPage.setDropMode(DropMode.USE_SELECTION);
         maxPage.setName("");
         maxPage.setText("10");
-        maxPage.setToolTipText("111");
+        maxPage.setToolTipText("");
         noticeSwing.add(maxPage, new GridConstraints(2, 4, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         final JLabel label5 = new JLabel();
         label5.setText("导出路径");

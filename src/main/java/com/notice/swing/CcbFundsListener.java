@@ -45,8 +45,9 @@ public class CcbFundsListener {
     public static void exportNotice(String startDate, String endDate, String searchWord, Integer maxPage, String exportPath, JProgressBar progressBar) {
         exportPath = FileUtil.normalize(exportPath);
         exportPath = exportPath + "/" + FundEnum.CCB_FUNDS.getName() + "/";
-        StringBuilder contentC = new StringBuilder();
-        if (ObjectUtil.isNull(maxPage)) {
+        StringBuilder result = new StringBuilder();
+        StringBuilder resultError = new StringBuilder();
+        if (ObjectUtil.isNull(maxPage) || maxPage <= 0) {
             maxPage = 1;
         }
         out:
@@ -57,9 +58,10 @@ public class CcbFundsListener {
             Document doc = getDocument(url);
             Element cls = doc.getElementsByClass("zixunliebiao").first();
             for (Element child : cls.children()) {
+                String title = null;
                 try {
                     if (ObjectUtil.isNotEmpty(child.getElementsByTag("li"))) {
-                        String title = child.getElementsByTag("li").get(0).getElementsByTag("a").get(0).attr("title");
+                        title = child.getElementsByTag("li").get(0).getElementsByTag("a").get(0).attr("title");
                         String href = child.getElementsByTag("li").get(0).getElementsByTag("a").get(0).attr("href");
                         String dateStr = child.getElementsByTag("li").get(0).getElementsByTag("span").text();
                         DateTime pubDate = DateUtil.parse(dateStr, DatePattern.CHINESE_DATE_PATTERN);
@@ -72,14 +74,17 @@ public class CcbFundsListener {
                         if (StrUtil.isNotEmpty(searchWord) && !title.contains(searchWord)) {
                             continue;
                         }
-                        contentC.append("第").append(i).append("页，标题为：").append(title).append("   ").append(dateStr).append("\r\n");
+                        result.append("第").append(i).append("页，标题为：").append(title).append("   ").append(dateStr).append("\r\n");
 
                         //下载文档
                         Document hrefDoc = getDocument(href);
                         String docHref = hrefDoc.getElementsByClass("wenzhang").first().getElementsByTag("a").first().attr("href");
                         String prefix = "http://www.ccbfund.cn";
+                        if (FileUtil.isAbsolutePath(docHref)) {
+                            docHref = prefix + docHref;
+                        }
                         String suffix = FileUtil.getSuffix(docHref);
-                        long size = HttpUtil.downloadFile(prefix + docHref, exportPath + "doc/" + title + "_" + DateUtil.format(pubDate, DatePattern.PURE_DATE_FORMAT) + "." + suffix);
+                        long size = HttpUtil.downloadFile(docHref, exportPath + "doc/" + title + "_" + DateUtil.format(pubDate, DatePattern.PURE_DATE_FORMAT) + "." + suffix);
                         if (size <= 0) {
                             System.out.println("-----------------------------------------title:" + title);
                         }
@@ -91,11 +96,15 @@ public class CcbFundsListener {
                         maxPage = Integer.parseInt(content);
                     }
                 } catch (Exception e) {
+                    resultError.append("第").append(i).append("页，标题为：").append(title).append(",").append(e.getMessage()).append("\r\n");
                     System.out.println("-----------------------------------------" + e.getMessage());
                 }
             }
         }
-        FileUtil.writeUtf8String(contentC.toString(), exportPath + "fundList.txt");
+        FileUtil.writeUtf8String(result.toString(), exportPath + "fundList.txt");
+        if (StrUtil.isNotEmpty(resultError)) {
+            FileUtil.writeUtf8String(resultError.toString(), exportPath + "fundListError.txt");
+        }
     }
 
 }

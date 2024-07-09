@@ -96,7 +96,7 @@
           <dropMode value="USE_SELECTION"/>
           <name value=""/>
           <text value="10"/>
-          <toolTipText value="111"/>
+          <toolTipText value=""/>
         </properties>
       </component>
       <component id="ab338" class="javax.swing.JLabel">
