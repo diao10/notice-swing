@@ -30,6 +30,13 @@ public class NoticeSwing {
 
 
     public NoticeSwing() {
+
+        DefaultComboBoxModel<String> defaultComboBoxModel1 = new DefaultComboBoxModel<>();
+        for (FundEnum value : FundEnum.values()) {
+            defaultComboBoxModel1.addElement(value.getName());
+        }
+        fundComboBox.setModel(defaultComboBoxModel1);
+
         //导出按钮
         exportButton.addActionListener(e -> {
             if (StrUtil.isBlank(exportPath.getText())) {
@@ -39,9 +46,9 @@ public class NoticeSwing {
             progressBar.setValue(0);
             if (FundEnum.CCB_FUNDS.getName().equals(fundComboBox.getSelectedItem())) {
                 CcbFundsListener.exportNotice(startDate.getText(), endDate.getText(), searchWord.getText(), maxPage.getText(), exportPath.getText(), progressBar);
-            }else if (FundEnum.CS_FUNDS.getName().equals(fundComboBox.getSelectedItem())) {
+            } else if (FundEnum.CS_FUNDS.getName().equals(fundComboBox.getSelectedItem())) {
                 CcbFundsListener.exportNotice(startDate.getText(), endDate.getText(), searchWord.getText(), maxPage.getText(), exportPath.getText(), progressBar);
-            }else if( FundEnum.EAST_MONEY.getName().equals(fundComboBox.getSelectedItem())) {
+            } else if (FundEnum.EAST_MONEY.getName().equals(fundComboBox.getSelectedItem())) {
 
             }
             progressBar.setValue(100);
@@ -148,9 +155,9 @@ public class NoticeSwing {
         noticeSwing.add(progressBar, new GridConstraints(5, 0, 1, 5, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         fundComboBox = new JComboBox();
         final DefaultComboBoxModel defaultComboBoxModel1 = new DefaultComboBoxModel();
-        defaultComboBoxModel1.addElement("建信基金");
-        defaultComboBoxModel1.addElement("长盛基金");
-        defaultComboBoxModel1.addElement("天天基金");
+        for (FundEnum value : FundEnum.values()) {
+            defaultComboBoxModel1.addElement(value.getName());
+        }
         fundComboBox.setModel(defaultComboBoxModel1);
         fundComboBox.setToolTipText("");
         noticeSwing.add(fundComboBox, new GridConstraints(0, 1, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));

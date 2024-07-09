@@ -98,7 +98,7 @@ public class CsFundsListener {
 
                 } catch (Exception e) {
                     e.printStackTrace();
-                    contentNoDoc.append("第").append(i + 1).append("页，标题为：").append(jsonObject.get("TITLE")).append("   ").append(dateStr2).append("\r\n");
+//                    contentNoDoc.append("第").append(i + 1).append("页，标题为：").append(jsonObject.get("TITLE")).append("   ").append(dateStr2).append("\r\n");
                 }
             }
         }
