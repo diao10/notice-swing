@@ -51,9 +51,10 @@ public class CsFundsListener {
         exportPath = exportPath + "/" + FundEnum.CS_FUNDS.getName() + "/";
         StringBuilder result = new StringBuilder();
         StringBuilder resultError = new StringBuilder();
-
+        boolean maxPageNullFlag = false;
         if (ObjectUtil.isNull(maxPage) || maxPage <= 0) {
             maxPage = 1;
+            maxPageNullFlag = true;
         }
         for (int i = 0; i <= maxPage; i++) {
             JSONObject reqJson = new JSONObject();
@@ -74,9 +75,13 @@ public class CsFundsListener {
             String bodyStr = HttpUtil.post("https://www.csfunds.com.cn/front/ajax/invoke", commonMap);
             JSONObject bodyJson = JSONUtil.parseObj(bodyStr);
             Integer count = bodyJson.getInt("count");
-            if (bodyJson.getInt("count") <= 0) {
+            if (count <= 0) {
                 break;
             }
+            if (maxPageNullFlag) {
+                maxPage = count / 20 + 1;
+            }
+
 
             JSONArray array = bodyJson.getJSONArray("InfoDt");
             for (JSONObject jsonObject : array.jsonIter()) {
@@ -101,6 +106,8 @@ public class CsFundsListener {
                     resultError.append("第").append(i + 1).append("页，标题为：").append(jsonObject.get("TITLE")).append(",").append(e.getMessage()).append("\r\n");
                 }
             }
+            progressBar.setValue(i * 100 / maxPage);
+            progressBar.repaint();
         }
         FileUtil.writeUtf8String(result.toString(), exportPath + "fundList.txt");
         if (StrUtil.isNotEmpty(resultError)) {

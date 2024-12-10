@@ -1,6 +1,5 @@
 package com.notice.swing;
 
-import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
@@ -8,11 +7,13 @@ import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.notice.enums.FundEnum;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -47,59 +48,64 @@ public class CcbFundsListener {
         exportPath = exportPath + "/" + FundEnum.CCB_FUNDS.getName() + "/";
         StringBuilder result = new StringBuilder();
         StringBuilder resultError = new StringBuilder();
+        boolean maxPageNullFlag = false;
         if (ObjectUtil.isNull(maxPage) || maxPage <= 0) {
             maxPage = 1;
+            maxPageNullFlag = true;
         }
         out:
         for (int i = 1; i <= maxPage; i++) {
-            progressBar.setValue(i * 100 / maxPage);
-            progressBar.repaint();
-            String url = "http://www.ccbfund.cn/xxplxxpl/index_" + i + ".jhtml";
-            Document doc = getDocument(url);
-            Element cls = doc.getElementsByClass("zixunliebiao").first();
-            for (Element child : cls.children()) {
-                String title = null;
-                try {
-                    if (ObjectUtil.isNotEmpty(child.getElementsByTag("li"))) {
-                        title = child.getElementsByTag("li").get(0).getElementsByTag("a").get(0).attr("title");
-                        String href = child.getElementsByTag("li").get(0).getElementsByTag("a").get(0).attr("href");
-                        String dateStr = child.getElementsByTag("li").get(0).getElementsByTag("span").text();
-                        DateTime pubDate = DateUtil.parse(dateStr, DatePattern.CHINESE_DATE_PATTERN);
-                        if (StrUtil.isNotEmpty(endDate) && pubDate.isAfter(DateUtil.parseDate(endDate))) {
-                            continue;
-                        }
-                        if (StrUtil.isNotEmpty(startDate) && pubDate.isBefore(DateUtil.parseDate(startDate))) {
-                            break out;
-                        }
-                        if (StrUtil.isNotEmpty(searchWord) && !title.contains(searchWord)) {
-                            continue;
-                        }
-                        result.append("第").append(i).append("页，标题为：").append(title).append("   ").append(dateStr).append("\r\n");
+            String url = "http://www.ccbfund.cn/website/v1/api/article/list?categoryId=830&page=" + i + "&keyword=";
+            if (StrUtil.isNotEmpty(searchWord)) {
+                url = url + searchWord;
+            }
+            String response = HttpUtil.get(url);
+            JSONObject responseJson = JSONUtil.parseObj(response);
+            if (ObjectUtil.isNull(responseJson.containsKey("data"))) {
+                break;
+            }
+            JSONObject data = responseJson.getJSONObject("data");
+            JSONArray content = data.getJSONArray("content");
+            Integer totalPages = data.getInt("totalPages");
+            if (maxPageNullFlag) {
+                maxPage = totalPages;
+            }
 
-                        //下载文档
-                        Document hrefDoc = getDocument(href);
-                        String docHref = hrefDoc.getElementsByClass("wenzhang").first().getElementsByTag("a").first().attr("href");
-                        String prefix = "http://www.ccbfund.cn";
-                        if (FileUtil.isAbsolutePath(docHref)) {
-                            docHref = prefix + docHref;
-                        }
-                        String suffix = FileUtil.getSuffix(docHref);
-                        long size = HttpUtil.downloadFile(docHref, exportPath + "doc/" + title + "_" + DateUtil.format(pubDate, DatePattern.PURE_DATE_FORMAT) + "." + suffix);
-                        if (size <= 0) {
-                            System.out.println("-----------------------------------------title:" + title);
-                        }
+            for (JSONObject json : content.jsonIter()) {
+
+                String title = json.getStr("title");
+                String dateStr = json.getStr("publishDate");
+                String categoryId = json.getStr("categoryId");
+                String contentId = json.getStr("contentId");
+                DateTime pubDate = DateUtil.parseDate(dateStr);
+                if (StrUtil.isNotEmpty(endDate) && pubDate.isAfter(DateUtil.parseDate(endDate))) {
+                    continue;
+                }
+                if (StrUtil.isNotEmpty(startDate) && pubDate.isBefore(DateUtil.parseDate(startDate))) {
+                    break out;
+                }
+                result.append("第").append(i).append("页，标题为：").append(title).append("   ").append(dateStr).append("\r\n");
+                String href = "http://www.ccbfund.cn/resource/static/content/" + contentId + ".html";
+                try {
+                    String urlRep = HttpUtil.get(href);
+                    String docHref = Jsoup.parse(urlRep).getElementsByTag("a").first().attr("href");
+                    String prefix = "http://www.ccbfund.cn";
+                    if (FileUtil.isAbsolutePath(docHref)) {
+                        docHref = prefix + docHref;
                     }
-                    //页数
-                    if (maxPage == 1 && ObjectUtil.isNotEmpty(child.getElementsByTag("div"))) {
-                        String content = child.getElementsByTag("div").text();
-                        content = StrUtil.sub(content, content.indexOf("共") + 1, content.indexOf("条"));
-                        maxPage = Integer.parseInt(content);
+                    String suffix = FileUtil.getSuffix(docHref);
+                    long size = HttpUtil.downloadFile(docHref, exportPath + "doc/" + title + "_" + dateStr + "." + suffix);
+                    if (size <= 0) {
+                        System.out.println("-----------------------------------------title:" + title);
+                        resultError.append("第").append(i).append("页，标题为：").append(title).append(",下载文件失败").append("\r\n");
                     }
                 } catch (Exception e) {
                     resultError.append("第").append(i).append("页，标题为：").append(title).append(",").append(e.getMessage()).append("\r\n");
                     System.out.println("-----------------------------------------" + e.getMessage());
                 }
             }
+            progressBar.setValue(i * 100 / maxPage);
+            progressBar.repaint();
         }
         FileUtil.writeUtf8String(result.toString(), exportPath + "fundList.txt");
         if (StrUtil.isNotEmpty(resultError)) {
