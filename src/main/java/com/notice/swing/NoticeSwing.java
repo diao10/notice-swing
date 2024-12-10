@@ -43,6 +43,7 @@ public class NoticeSwing {
                 JOptionPane.showMessageDialog(noticeSwing, "请输入导出路径");
                 return;
             }
+            progressBar.setStringPainted(true);
             progressBar.setValue(0);
             if (FundEnum.CCB_FUNDS.getName().equals(fundComboBox.getSelectedItem())) {
                 CcbFundsListener.exportNotice(startDate.getText(), endDate.getText(), searchWord.getText(), maxPage.getText(), exportPath.getText(), progressBar);
