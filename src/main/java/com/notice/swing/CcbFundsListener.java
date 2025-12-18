@@ -11,28 +11,15 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.notice.enums.FundEnum;
-import org.jsoup.Connection;
 import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 
 import javax.swing.*;
-import java.io.IOException;
 
 
 /**
  * @author EDY
  */
 public class CcbFundsListener {
-    public static Document getDocument(String url) {
-        Connection conn = Jsoup.connect(url);
-        Document document = null;
-        try {
-            document = conn.get();
-        } catch (IOException e) {
-            System.out.println("-----------------------------------------conn:" + e.getMessage());
-        }
-        return document;
-    }
 
     public static void exportNotice(String startDate, String endDate, String searchWord, String maxPageStr, String exportPath, JProgressBar progressBar) {
         Integer maxPage = null;
